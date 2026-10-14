@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Probá EcoMVD</title>
+<!-- Página pública (GitHub Pages) a la que lleva el QR del stand: en el
+     celular muestra solo los pasos de ese celular; en la compu, el QR de esta
+     misma página para imprimir o mostrar.
+     - Si el proyecto pasa a otro SDK de Expo, cambiar SDK abajo (tiene que
+       coincidir con el Expo Go de las tiendas).
+     - Si se genera otro APK, cambiar APK abajo. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 24px 16px;
+    background: #fff; color: #14231A; }
+  header { text-align: center; margin-bottom: 20px; }
+  h1 { margin: 0 0 4px; color: #1F5C36; font-size: 30px; }
+  .sub { margin: 0; color: #3B8351; }
+  .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+  .card { border: 3px solid #3B8351; border-radius: 24px; padding: 24px 20px; max-width: 380px;
+    width: 100%; text-align: center; box-sizing: border-box; page-break-inside: avoid; }
+  h2 { margin: 0 0 12px; color: #1F5C36; font-size: 22px; }
+  ol { text-align: left; line-height: 1.5; padding-left: 22px; margin: 0; }
+  li { margin-bottom: 14px; }
+  .btn { display: block; margin-top: 8px; padding: 12px; border-radius: 12px; background: #3B8351;
+    color: #fff; text-decoration: none; font-weight: 700; text-align: center; }
+  .btn.alt { background: #fff; color: #1F5C36; border: 2px solid #3B8351; }
+  .note { font-size: 13px; color: #6b7a6e; margin: 12px 0 0; }
+  .qr { display: inline-block; padding: 10px; background: #fff; }
+  .foot { font-size: 12px; color: #6b7a6e; margin-top: 24px; text-align: center; line-height: 1.6; }
+  .foot a, .note a { color: #1F5C36; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Probá EcoMVD</h1>
+  <p class="sub">Tu barrio, tu territorio</p>
+</header>
+
+<div class="grid">
+  <div class="card" id="pc">
+    <h2>Escaneá con la cámara del celular</h2>
+    <div class="qr" id="qr"></div>
+    <p class="note">Sirve para iPhone y Android. Mejor con Wi-Fi: la primera vez la app baja unos MB.</p>
+  </div>
+
+  <div class="card" id="iphone">
+    <h2>iPhone</h2>
+    <ol>
+      <li>Instalá <strong>Expo Go</strong> (gratis).
+        <a class="btn alt" href="https://apps.apple.com/app/expo-go/id982107779">Expo Go en el App Store</a></li>
+      <li>Volvé a esta página y abrí EcoMVD.
+        <a class="btn expo-link" href="#">Abrir EcoMVD</a></li>
+      <li>Creá tu cuenta (o tocá "Probar sin cuenta").</li>
+    </ol>
+  </div>
+
+  <div class="card" id="android">
+    <h2>Android</h2>
+    <ol>
+      <li>Instalá <strong>Expo Go</strong> (gratis).
+        <a class="btn alt" href="https://play.google.com/store/apps/details?id=host.exp.exponent">Expo Go en Google Play</a></li>
+      <li>Volvé a esta página y abrí EcoMVD.
+        <a class="btn expo-link" href="#">Abrir EcoMVD</a></li>
+      <li>Creá tu cuenta (o tocá "Probar sin cuenta").</li>
+    </ol>
+    <p class="note">¿Preferís instalarla como app? <a id="apk" href="#">Descargá el APK</a> (123 MB;
+      Android te va a pedir permiso para instalar apps de fuentes desconocidas).</p>
+  </div>
+</div>
+
+<p class="foot">
+  <a href="#" id="all" hidden>¿Tenés otro celular? Ver todas las opciones</a><br>
+  Versión de prueba de un proyecto estudiantil · Terra Byte · Liceo N.º 10 · Olimpiada Ceibal 2026<br>
+  <a href="privacidad.html">Reglas y privacidad</a>
+</p>
+
+<script>
+  var APK = 'https://expo.dev/artifacts/eas/tQE4sq_kbJW2vkgrEGJtgBbMC7PfqBQ_hH9yU6_yT7Q.apk';
+  var PROJECT = '5ff4cb6f-f8bc-4121-86c3-b303462a1d4e';
+  var SDK = '57.0.0';
+  var expoGo = 'exp://u.expo.dev/' + PROJECT + '?runtime-version=' + encodeURIComponent('exposdk:' + SDK) +
+    '&channel-name=preview';
+
+  document.getElementById('apk').href = APK;
+  document.querySelectorAll('.expo-link').forEach(function (a) { a.href = expoGo; });
+
+  var ua = navigator.userAgent;
+  var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var isAndroid = /Android/.test(ua);
+  if (isIOS || isAndroid) {
+    // En el celular: solo sus pasos (con un link por si se detectó mal).
+    document.getElementById('pc').hidden = true;
+    document.getElementById(isIOS ? 'android' : 'iphone').hidden = true;
+    var all = document.getElementById('all');
+    all.hidden = false;
+    all.onclick = function (e) {
+      e.preventDefault();
+      document.getElementById('iphone').hidden = false;
+      document.getElementById('android').hidden = false;
+      all.hidden = true;
+    };
+  } else {
+    var page = location.href.split('#')[0].replace(/index\.html$/, '');
+    new QRCode(document.getElementById('qr'), { text: page, width: 240, height: 240 });
+  }
+</script>
+</body>
+</html>
