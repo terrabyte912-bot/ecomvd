@@ -26,6 +26,8 @@
   .btn { display: block; margin-top: 8px; padding: 12px; border-radius: 12px; background: #3B8351;
     color: #fff; text-decoration: none; font-weight: 700; text-align: center; }
   .btn.alt { background: #fff; color: #1F5C36; border: 2px solid #3B8351; }
+  .copy { display: block; width: 100%; margin-top: 8px; padding: 8px; border: 0; background: none;
+    color: #1F5C36; font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; }
   .note { font-size: 13px; color: #6b7a6e; margin: 12px 0 0; }
   .qr { display: inline-block; padding: 10px; background: #fff; }
   .foot { font-size: 12px; color: #6b7a6e; margin-top: 24px; text-align: center; line-height: 1.6; }
@@ -52,7 +54,8 @@
       <li>Instalá <strong>Expo Go</strong> (gratis).
         <a class="btn alt" href="https://apps.apple.com/app/expo-go/id982107779">Expo Go en el App Store</a></li>
       <li>Volvé a esta página y abrí EcoMVD.
-        <a class="btn expo-link" href="#">Abrir EcoMVD</a></li>
+        <a class="btn expo-link" href="#">Abrir EcoMVD</a>
+        <button type="button" class="copy">¿No se abre? Copiá el link</button></li>
       <li>Creá tu cuenta (o tocá "Probar sin cuenta").</li>
     </ol>
   </div>
@@ -63,7 +66,8 @@
       <li>Instalá <strong>Expo Go</strong> (gratis).
         <a class="btn alt" href="https://play.google.com/store/apps/details?id=host.exp.exponent">Expo Go en Google Play</a></li>
       <li>Volvé a esta página y abrí EcoMVD.
-        <a class="btn expo-link" href="#">Abrir EcoMVD</a></li>
+        <a class="btn" id="android-link" href="#">Abrir EcoMVD</a>
+        <button type="button" class="copy">¿No se abre? Copiá el link</button></li>
       <li>Creá tu cuenta (o tocá "Probar sin cuenta").</li>
     </ol>
     <p class="note">¿Preferís instalarla como app? <a id="apk" href="#">Descargá el APK</a> (123 MB;
@@ -81,11 +85,32 @@
   var APK = 'https://expo.dev/artifacts/eas/tQE4sq_kbJW2vkgrEGJtgBbMC7PfqBQ_hH9yU6_yT7Q.apk';
   var PROJECT = '5ff4cb6f-f8bc-4121-86c3-b303462a1d4e';
   var SDK = '57.0.0';
-  var expoGo = 'exp://u.expo.dev/' + PROJECT + '?runtime-version=' + encodeURIComponent('exposdk:' + SDK) +
+  var path = 'u.expo.dev/' + PROJECT + '?runtime-version=' + encodeURIComponent('exposdk:' + SDK) +
     '&channel-name=preview';
+  var expoGo = 'exp://' + path;
+  // Chrome en Android (y el navegador de WhatsApp) suele ignorar los links exp://.
+  // Con intent:// abre Expo Go directo, y si no está instalado va a Google Play.
+  var playStore = 'https://play.google.com/store/apps/details?id=host.exp.exponent';
+  var androidIntent = 'intent://' + path + '#Intent;scheme=exp;package=host.exp.exponent;S.browser_fallback_url=' +
+    encodeURIComponent(playStore) + ';end';
 
   document.getElementById('apk').href = APK;
   document.querySelectorAll('.expo-link').forEach(function (a) { a.href = expoGo; });
+  document.getElementById('android-link').href = androidIntent;
+
+  // Plan B: copiar el link y pegarlo en Expo Go ("Enter URL manually").
+  document.querySelectorAll('.copy').forEach(function (b) {
+    b.onclick = function () {
+      var done = function () {
+        b.textContent = 'Copiado. Abrí Expo Go, tocá "Enter URL manually" y pegalo.';
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(expoGo).then(done, function () { prompt('Copiá este link:', expoGo); });
+      } else {
+        prompt('Copiá este link:', expoGo);
+      }
+    };
+  });
 
   var ua = navigator.userAgent;
   var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
