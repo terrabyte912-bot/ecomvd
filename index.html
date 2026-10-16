@@ -7,6 +7,9 @@
 <!-- Página pública (GitHub Pages) a la que lleva el QR del stand: en el
      celular muestra solo los pasos de ese celular; en la compu, el QR de esta
      misma página para imprimir o mostrar.
+     - Android: el APK (app normal, no depende de Expo Go).
+     - iPhone: Expo Go, que desde el 12/5/2026 solo abre proyectos de una
+       organización de Expo de la que la persona sea miembro (rol "Viewer").
      - Si el proyecto pasa a otro SDK de Expo, cambiar SDK abajo (tiene que
        coincidir con el Expo Go de las tiendas).
      - Si se genera otro APK, cambiar APK abajo. -->
@@ -29,6 +32,7 @@
   .copy { display: block; width: 100%; margin-top: 8px; padding: 8px; border: 0; background: none;
     color: #1F5C36; font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; }
   .note { font-size: 13px; color: #6b7a6e; margin: 12px 0 0; }
+  .lead { margin: 0 0 14px; text-align: left; }
   .qr { display: inline-block; padding: 10px; background: #fff; }
   .foot { font-size: 12px; color: #6b7a6e; margin-top: 24px; text-align: center; line-height: 1.6; }
   .foot a, .note a { color: #1F5C36; }
@@ -45,33 +49,38 @@
   <div class="card" id="pc">
     <h2>Escaneá con la cámara del celular</h2>
     <div class="qr" id="qr"></div>
-    <p class="note">Sirve para iPhone y Android. Mejor con Wi-Fi: la primera vez la app baja unos MB.</p>
-  </div>
-
-  <div class="card" id="iphone">
-    <h2>iPhone</h2>
-    <ol>
-      <li>Instalá <strong>Expo Go</strong> (gratis).
-        <a class="btn alt" href="https://apps.apple.com/app/expo-go/id982107779">Expo Go en el App Store</a></li>
-      <li>Volvé a esta página y abrí EcoMVD.
-        <a class="btn expo-link" href="#">Abrir EcoMVD</a>
-        <button type="button" class="copy">¿No se abre? Copiá el link</button></li>
-      <li>Creá tu cuenta (o tocá "Probar sin cuenta").</li>
-    </ol>
+    <p class="note">En Android se instala directo. En iPhone hay que pedir acceso (ver los pasos).</p>
   </div>
 
   <div class="card" id="android">
     <h2>Android</h2>
     <ol>
-      <li>Instalá <strong>Expo Go</strong> (gratis).
-        <a class="btn alt" href="https://play.google.com/store/apps/details?id=host.exp.exponent">Expo Go en Google Play</a></li>
-      <li>Volvé a esta página y abrí EcoMVD.
-        <a class="btn" id="android-link" href="#">Abrir EcoMVD</a>
-        <button type="button" class="copy">¿No se abre? Copiá el link</button></li>
+      <li>Descargá la app (123 MB, mejor con Wi-Fi).
+        <a class="btn" id="apk" href="#">Descargar EcoMVD</a></li>
+      <li>Abrí el archivo que bajó (en la notificación o en "Descargas"). Si Android avisa que es de
+        una fuente desconocida, tocá <strong>Configuración</strong> y permití instalar desde Chrome.</li>
+      <li>Tocá <strong>Instalar</strong> y después <strong>Abrir</strong>.</li>
       <li>Creá tu cuenta (o tocá "Probar sin cuenta").</li>
     </ol>
-    <p class="note">¿Preferís instalarla como app? <a id="apk" href="#">Descargá el APK</a> (123 MB;
-      Android te va a pedir permiso para instalar apps de fuentes desconocidas).</p>
+    <p class="note">Si aparece Google Play Protect, tocá "Más detalles" → "Instalar de todas formas":
+      es una versión de prueba y todavía no está en la tienda.</p>
+  </div>
+
+  <div class="card" id="iphone">
+    <h2>iPhone</h2>
+    <p class="note lead">EcoMVD todavía no está en el App Store. En iPhone se prueba con la app
+      <strong>Expo Go</strong>, que solo la abre para las personas que sumamos al proyecto.</p>
+    <ol>
+      <li>Instalá <strong>Expo Go</strong> (gratis).
+        <a class="btn alt" href="https://apps.apple.com/app/expo-go/id982107779">Expo Go en el App Store</a></li>
+      <li>Abrí Expo Go y creá una cuenta gratis (<strong>Sign up</strong>).</li>
+      <li>Mandale tu <strong>nombre de usuario de Expo</strong> a quien te invitó (o a
+        terrabyte912@gmail.com). Te llega un mail de invitación: aceptalo.</li>
+      <li>Con la sesión iniciada en Expo Go, volvé a esta página y abrí EcoMVD.
+        <a class="btn expo-link" href="#">Abrir EcoMVD</a>
+        <button type="button" class="copy">¿No se abre? Copiá el link</button></li>
+      <li>Creá tu cuenta de EcoMVD (o tocá "Probar sin cuenta").</li>
+    </ol>
   </div>
 </div>
 
@@ -88,15 +97,9 @@
   var path = 'u.expo.dev/' + PROJECT + '?runtime-version=' + encodeURIComponent('exposdk:' + SDK) +
     '&channel-name=preview';
   var expoGo = 'exp://' + path;
-  // Chrome en Android (y el navegador de WhatsApp) suele ignorar los links exp://.
-  // Con intent:// abre Expo Go directo, y si no está instalado va a Google Play.
-  var playStore = 'https://play.google.com/store/apps/details?id=host.exp.exponent';
-  var androidIntent = 'intent://' + path + '#Intent;scheme=exp;package=host.exp.exponent;S.browser_fallback_url=' +
-    encodeURIComponent(playStore) + ';end';
 
   document.getElementById('apk').href = APK;
   document.querySelectorAll('.expo-link').forEach(function (a) { a.href = expoGo; });
-  document.getElementById('android-link').href = androidIntent;
 
   // Plan B: copiar el link y pegarlo en Expo Go ("Enter URL manually").
   document.querySelectorAll('.copy').forEach(function (b) {
