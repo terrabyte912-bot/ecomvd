@@ -33,6 +33,11 @@
     color: #1F5C36; font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; }
   .note { font-size: 13px; color: #6b7a6e; margin: 12px 0 0; }
   .lead { margin: 0 0 14px; text-align: left; }
+  .help { text-align: left; font-size: 14px; line-height: 1.45; margin-top: 12px; color: #14231A; }
+  .help summary { font-weight: 700; color: #1F5C36; cursor: pointer; padding: 6px 0; }
+  .help ul { padding-left: 18px; margin: 6px 0; }
+  .help li { margin-bottom: 8px; }
+  .help p { margin: 6px 0; }
   .qr { display: inline-block; padding: 10px; background: #fff; }
   .foot { font-size: 12px; color: #6b7a6e; margin-top: 24px; text-align: center; line-height: 1.6; }
   .foot a, .note a { color: #1F5C36; }
@@ -57,13 +62,26 @@
     <ol>
       <li>Descargá la app (123 MB, mejor con Wi-Fi).
         <a class="btn" id="apk" href="#">Descargar EcoMVD</a></li>
-      <li>Abrí el archivo que bajó (en la notificación o en "Descargas"). Si Android avisa que es de
-        una fuente desconocida, tocá <strong>Configuración</strong> y permití instalar desde Chrome.</li>
+      <li>Abrí el archivo que bajó (en la notificación o en "Descargas").</li>
       <li>Tocá <strong>Instalar</strong> y después <strong>Abrir</strong>.</li>
       <li>Creá tu cuenta (o tocá "Probar sin cuenta").</li>
     </ol>
-    <p class="note">Si aparece Google Play Protect, tocá "Más detalles" → "Instalar de todas formas":
-      es una versión de prueba y todavía no está en la tienda.</p>
+    <details class="help">
+      <summary>¿El celular la bloquea?</summary>
+      <p>Es normal: la app todavía no está en Google Play. Según el mensaje que aparezca:</p>
+      <ul>
+        <li><strong>"Este tipo de archivo puede dañar el dispositivo"</strong> (al descargar): tocá
+          <strong>Descargar de todas formas</strong>.</li>
+        <li><strong>Samsung, "Auto Blocker"</strong>: andá a Ajustes → Seguridad y privacidad →
+          <strong>Auto Blocker</strong> y apagalo (te pide el PIN). Instalá la app y después lo podés
+          volver a prender.</li>
+        <li><strong>"Por tu seguridad, no se pueden instalar apps desconocidas"</strong>: tocá
+          <strong>Configuración</strong> y activá <strong>Permitir de esta fuente</strong>.</li>
+        <li><strong>Google Play Protect</strong>: tocá <strong>Más detalles</strong> →
+          <strong>Instalar de todas formas</strong>.</li>
+      </ul>
+      <p>Si es un celular del liceo o del trabajo, puede que no deje instalar nada fuera de la tienda.</p>
+    </details>
   </div>
 
   <div class="card" id="iphone">
