@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ruleta EcoMVD</title>
+<!-- Ruleta de premios del stand, para la tablet. Se gira una vez por canje, viendo la pantalla
+     "¡Canjeaste tu regalo!" de la app. No usa internet: una vez abierta, sigue andando aunque se
+     corte la conexión. Los casilleros son los mismos de la ruleta de cartón del canvas. -->
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.5vmin;
+    background: #0F3D22; color: #fff; font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+  h1 { margin: 0; font-size: 6vmin; }
+  .rueda { position: relative; width: 64vmin; height: 64vmin; cursor: pointer; }
+  .rueda svg { display: block; width: 100%; height: 100%; transition: transform 4.5s cubic-bezier(.15, .85, .25, 1); }
+  .flecha { position: absolute; left: 50%; top: -2.5vmin; z-index: 1; width: 0; height: 0; margin-left: -3vmin;
+    border: 3vmin solid transparent; border-top: 6vmin solid #E07A38; border-bottom: 0; }
+  #premio { margin: 0; min-height: 7vmin; font-size: 5.5vmin; font-weight: 800; color: #A6D987; text-align: center; }
+  button { font: inherit; font-size: 5vmin; font-weight: 800; padding: 1.5vmin 8vmin; min-height: 44px; border: 0;
+    border-radius: 99px; background: #A6D987; color: #0F3D22; cursor: pointer; }
+  button:disabled { opacity: .5; }
+</style>
+</head>
+<body>
+<h1>Ruleta EcoMVD</h1>
+<div class="rueda" id="rueda">
+  <div class="flecha"></div>
+  <svg id="svg" viewBox="-100 -100 200 200" role="img" aria-label="Ruleta de premios"></svg>
+</div>
+<p id="premio" aria-live="polite"></p>
+<button id="girar" type="button">¡Girar!</button>
+<script>
+  // Mismos casilleros y colores que la ruleta de cartón: [premio, fondo, letra].
+  var PREMIOS = [
+    ['Sticker', '#1F5C36', '#fff'], ['Semillas', '#6FA77E', '#14231A'], ['Sticker', '#3B8351', '#fff'],
+    ['Señalador\nde cartón', '#CFE6D5', '#14231A'], ['Semillas', '#1F5C36', '#fff'],
+    ['Lápiz\nreciclado', '#6FA77E', '#14231A'], ['¡Girá\notra vez!', '#B4531A', '#fff'], ['Plantín', '#F0F7E8', '#14231A']
+  ];
+  var svg = document.getElementById('svg');
+  var boton = document.getElementById('girar');
+  var premio = document.getElementById('premio');
+  var paso = 360 / PREMIOS.length, giro = 0, girando = false;
+
+  function dibujar(tag, attrs) {
+    var e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function punto(grados) {
+    var r = grados * Math.PI / 180;
+    return (95 * Math.cos(r)).toFixed(2) + ' ' + (95 * Math.sin(r)).toFixed(2);
+  }
+  // El casillero i queda centrado a i·paso grados de arriba, en sentido horario.
+  PREMIOS.forEach(function (p, i) {
+    var desde = i * paso - paso / 2 - 90;
+    svg.appendChild(dibujar('path', { d: 'M0 0 L' + punto(desde) + ' A95 95 0 0 1 ' + punto(desde + paso) + ' Z',
+      fill: p[1], stroke: '#fff', 'stroke-width': 1.5 }));
+    var texto = dibujar('g', { transform: 'rotate(' + i * paso + ')', fill: p[2], 'font-size': 9,
+      'font-weight': 800, 'text-anchor': 'middle' });
+    var lineas = p[0].split('\n');
+    lineas.forEach(function (linea, j) {
+      var t = dibujar('text', { x: 0, y: lineas.length > 1 ? -68 + j * 11 : -62 });
+      t.textContent = linea;
+      texto.appendChild(t);
+    });
+    svg.appendChild(texto);
+  });
+  svg.appendChild(dibujar('circle', { r: 97, fill: 'none', stroke: '#A6D987', 'stroke-width': 4 }));
+  svg.appendChild(dibujar('circle', { r: 17, fill: '#fff', stroke: '#1F5C36', 'stroke-width': 2.5 }));
+  var centro = dibujar('text', { y: 2.5, 'font-size': 7, 'font-weight': 800, 'text-anchor': 'middle', fill: '#1F5C36' });
+  centro.textContent = 'EcoMVD';
+  svg.appendChild(centro);
+
+  function girar() {
+    if (girando) return;
+    girando = true;
+    boton.disabled = true;
+    premio.textContent = '';
+    giro += 5 * 360 + Math.random() * 360;
+    svg.style.transform = 'rotate(' + giro + 'deg)';
+  }
+  // El premio es el casillero que quedó abajo de la flecha.
+  svg.addEventListener('transitionend', function () {
+    var i = Math.round((360 - giro % 360) % 360 / paso) % PREMIOS.length;
+    var nombre = PREMIOS[i][0].replace('\n', ' ');
+    premio.textContent = nombre === '¡Girá otra vez!' ? nombre : '¡Te tocó: ' + nombre + '!';
+    girando = false;
+    boton.disabled = false;
+  });
+  boton.addEventListener('click', girar);
+  document.getElementById('rueda').addEventListener('click', girar);
+</script>
+</body>
+</html>
