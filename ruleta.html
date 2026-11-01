@@ -73,7 +73,26 @@
   centro.textContent = 'EcoMVD';
   svg.appendChild(centro);
 
+  // En la tablet: pantalla completa con el primer toque, y que la pantalla no se apague.
+  var bloqueo = null;
+  function noApagar() {
+    if (navigator.wakeLock && (!bloqueo || bloqueo.released)) {
+      navigator.wakeLock.request('screen').then(function (b) { bloqueo = b; }).catch(function () {});
+    }
+  }
+  function pantallaCompleta() {
+    var el = document.documentElement, pedir = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (pedir && !(document.fullscreenElement || document.webkitFullscreenElement)) {
+      var r = pedir.call(el);
+      if (r && r.catch) r.catch(function () {});
+    }
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) noApagar(); });
+  noApagar();
+
   function girar() {
+    pantallaCompleta();
+    noApagar();
     if (girando) return;
     girando = true;
     boton.disabled = true;
