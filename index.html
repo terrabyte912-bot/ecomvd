@@ -16,22 +16,25 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 24px 16px;
-    background: #fff; color: #14231A; }
-  header { text-align: center; margin-bottom: 20px; }
+    background: #0F3D22; color: #14231A; }
+  body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: #0F3D22 url(fondo.webp) center / cover no-repeat; }
+  @media print { body::before { display: none; } }
+  header { box-sizing: border-box; max-width: 800px; margin: 0 auto 20px; padding: 18px 20px; border-radius: 24px; text-align: center;
+    background: #FAFCF7; box-shadow: 0 6px 18px rgba(15, 61, 34, .28); }
   h1 { margin: 0 0 4px; color: #1F5C36; font-size: 30px; }
   .sub { margin: 0; color: #3B8351; }
   .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-  .card { border: 3px solid #3B8351; border-radius: 24px; padding: 24px 20px; max-width: 380px;
+  .card { border-radius: 24px; padding: 24px 20px; max-width: 380px; background: #FAFCF7; box-shadow: 0 6px 18px rgba(15, 61, 34, .28);
     width: 100%; text-align: center; box-sizing: border-box; page-break-inside: avoid; }
   h2 { margin: 0 0 12px; color: #1F5C36; font-size: 22px; }
   ol { text-align: left; line-height: 1.5; padding-left: 22px; margin: 0; }
   li { margin-bottom: 14px; }
-  .btn { display: block; margin-top: 8px; padding: 12px; border-radius: 12px; background: #3B8351;
+  .btn { display: block; margin-top: 8px; padding: 14px 18px; border-radius: 99px; background: #1C1C1E;
     color: #fff; text-decoration: none; font-weight: 700; text-align: center; }
-  .btn.alt { background: #fff; color: #1F5C36; border: 2px solid #3B8351; }
+  .btn.alt { background: #fff; color: #14231A; border: 1.5px solid rgba(20, 35, 26, .12); }
   .copy { display: block; width: 100%; margin-top: 8px; padding: 8px; border: 0; background: none;
     color: #1F5C36; font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; }
-  .note { font-size: 13px; color: #6b7a6e; margin: 12px 0 0; }
+  .note { font-size: 13px; color: rgba(20, 35, 26, .72); margin: 12px 0 0; }
   .lead { margin: 0 0 14px; text-align: left; }
   .help { text-align: left; font-size: 14px; line-height: 1.45; margin-top: 12px; color: #14231A; }
   .help summary { font-weight: 700; color: #1F5C36; cursor: pointer; padding: 6px 0; }
@@ -39,7 +42,8 @@
   .help li { margin-bottom: 8px; }
   .help p { margin: 6px 0; }
   .qr { display: inline-block; padding: 10px; background: #fff; }
-  .foot { font-size: 12px; color: #6b7a6e; margin-top: 24px; text-align: center; line-height: 1.6; }
+  .foot { box-sizing: border-box; max-width: 800px; margin: 24px auto 0; padding: 12px 16px; border-radius: 16px; background: #FAFCF7;
+    font-size: 12px; color: rgba(20, 35, 26, .72); text-align: center; line-height: 1.6; }
   .foot a, .note a { color: #1F5C36; }
   [hidden] { display: none !important; }
 </style>
