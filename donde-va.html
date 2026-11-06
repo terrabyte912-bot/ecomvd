@@ -28,7 +28,7 @@
     gap: 1.6vmin; padding: max(2.5vmin, env(safe-area-inset-top)) max(3vmin, env(safe-area-inset-right))
       max(2.5vmin, env(safe-area-inset-bottom)) max(3vmin, env(safe-area-inset-left)); }
   .centrada { justify-content: center; }
-  .tarjeta { box-sizing: border-box; width: 100%; max-width: 1080px; max-height: 100%; min-height: 0; display: flex; flex-direction: column; align-items: center; gap: 2vmin;
+  .tarjeta { box-sizing: border-box; width: 100%; max-width: 1080px; max-height: 100%; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 2vmin;
     padding: 3vmin 3.5vmin; border-radius: 3.4vmin; background: var(--blanco); text-align: center; box-shadow: var(--sombra); }
   .marca { font-size: clamp(14px, 2.7vmin, 25px); font-weight: 600; color: var(--hoja); }
   h1 { font-size: clamp(48px, 13vmin, 116px); font-weight: 800; line-height: 1; letter-spacing: -0.02em; color: var(--hoja-oscura); }
@@ -42,12 +42,13 @@
 
   /* Tachos: una fila en pantallas acostadas; dos filas en un celular parado. */
   .tachos { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.4vmin; width: 100%; max-width: 1500px; }
-  .tacho { --c: #000; --t: #fff; font: inherit; color: var(--t); background: var(--c); border: 0; border-radius: 2.4vmin; cursor: pointer; display: flex;
+  .tacho { --c: #000; --t: #fff; container-type: inline-size; font: inherit; color: var(--t); background: var(--c); border: 0; border-radius: 2.4vmin; cursor: pointer; display: flex;
     flex-direction: column; align-items: center; justify-content: center; gap: .8vmin; min-height: 13vmin; padding: 1.4vmin 1vmin; text-align: center;
     box-shadow: var(--sombra); transition: transform .12s ease, box-shadow .12s ease; }
   #tachos small { display: none; }
-  .tacho b { font-size: clamp(17px, 3.7vmin, 36px); font-weight: 800; line-height: 1.05; }
-  .tacho small { font-size: clamp(12px, 2.2vmin, 20px); font-weight: 600; line-height: 1.15; }
+  /* El tamaño de la letra sale del ancho del tacho, para que «Reciclables» nunca se pase del borde. */
+  .tacho b { font-size: clamp(13px, 3vmin, 30px); font-size: clamp(12px, min(3.7vmin, 15.5cqi), 36px); font-weight: 800; line-height: 1.05; overflow-wrap: anywhere; }
+  .tacho small { font-size: clamp(11px, 2vmin, 18px); font-size: clamp(10px, min(2.2vmin, 9.5cqi), 20px); font-weight: 600; line-height: 1.15; }
   .muestra .tacho { cursor: default; box-shadow: none; }
   .tacho.sobre { transform: translateY(-1vmin) scale(1.04); box-shadow: 0 0 0 .6vmin #fff; }
   .tacho.bien { box-shadow: 0 0 0 .7vmin var(--menta); }
@@ -99,10 +100,11 @@
   .lista-creditos li { padding: .7vmin 0; border-bottom: 1px solid var(--gris-claro); overflow-wrap: anywhere; }
   .lista-creditos a { color: var(--hoja-oscura); }
 
-  @media (max-aspect-ratio: 1/1) {
+  @media (max-aspect-ratio: 1/1), (max-width: 700px) {
     .tachos { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
     .tacho { grid-column: span 2; min-height: 72px; border-radius: 16px; padding: 8px 4px; }
     .tacho:nth-child(n+4) { grid-column: span 3; }
+    .muestra .tacho { min-height: 56px; padding: 6px 4px; }
     .carta { width: min(86vw, 520px); border-radius: 20px; padding: 12px 16px; }
     #foto { height: clamp(110px, 25vh, 300px); }
     .tarjeta { border-radius: 22px; padding: 18px 14px; gap: 12px; }
