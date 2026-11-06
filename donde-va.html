@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F3D22">
+<title>¿Dónde va? · EcoMVD</title>
+<!-- Juego del stand: clasificar residuos con 3 vidas y cada vez menos tiempo, en la tablet, el monitor
+     o un celular. Se arrastra el residuo al tacho o se toca el tacho. Una vez abierto, sigue andando
+     aunque se corte la conexión (las fotos vienen en donde-va-fotos.js; la letra baja de Google si hay
+     internet y, si no, usa la del sistema). Dónde va cada residuo sale de src/data/materials.js,
+     verificado con la Intendencia. -->
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+  :root { --fondo: #0F3D22; --ola: #1F5C36; --ola2: #2B5E35; --claro: #A6D987; --linea: #CDEBD3; --crema: #F7FBF4;
+    --tinta: #14231A; --naranja: #E07A38; --bien: #A6D987; --mal: #F2A97E;
+    --letra: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--fondo); color: #fff; font-family: var(--letra); overflow: hidden;
+    -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+  p, h1, h2, ul { margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+
+  .pantalla { position: fixed; inset: 0; box-sizing: border-box; display: flex; flex-direction: column; align-items: center;
+    gap: 2vmin; padding: max(2.5vmin, env(safe-area-inset-top)) max(3vmin, env(safe-area-inset-right))
+      max(2.5vmin, env(safe-area-inset-bottom)) max(3vmin, env(safe-area-inset-left)); }
+  .centrada { justify-content: center; text-align: center; gap: 2.6vmin; }
+  .ondas { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; height: 34vh; display: block; }
+  .centrada > * { position: relative; }
+  .marca { font-size: clamp(14px, 2.8vmin, 26px); font-weight: 600; color: var(--linea); }
+  h1 { font-size: clamp(52px, 15vmin, 130px); font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+  h2 { font-size: clamp(32px, 8.5vmin, 76px); font-weight: 800; line-height: 1.05; letter-spacing: -0.01em; color: var(--claro); text-wrap: balance; }
+  .bajada { font-size: clamp(18px, 3.8vmin, 36px); font-weight: 600; max-width: 26em; text-wrap: balance; }
+  .boton { font: inherit; font-size: clamp(24px, 5.4vmin, 48px); font-weight: 800; min-height: 56px; padding: 1.6vmin 9vmin; border: 0;
+    border-radius: 99px; background: var(--claro); color: var(--fondo); cursor: pointer; }
+  .boton:active { transform: scale(.97); }
+  button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  #record { font-size: clamp(14px, 2.8vmin, 24px); color: var(--linea); min-height: 1.3em; }
+
+  /* Tachos: una fila en pantallas acostadas; dos filas en un celular parado. */
+  .tachos { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.4vmin; width: 100%; max-width: 1500px; }
+  .muestra { max-width: 1100px; }
+  .tacho { --c: #000; font: inherit; color: #fff; background: var(--c); border: 0; border-radius: 2.4vmin; cursor: pointer; display: flex;
+    flex-direction: column; align-items: center; justify-content: center; gap: .8vmin; min-height: 13vmin; padding: 1.4vmin 1vmin; text-align: center;
+    transition: transform .12s ease, box-shadow .12s ease; }
+  #tachos small { display: none; }
+  .tacho b { font-size: clamp(17px, 3.7vmin, 36px); font-weight: 800; line-height: 1.05; }
+  .tacho small { font-size: clamp(12px, 2.3vmin, 21px); font-weight: 600; line-height: 1.15; opacity: .92; }
+  .muestra .tacho { cursor: default; min-height: 15vmin; }
+  .tacho.sobre { transform: translateY(-1vmin) scale(1.04); box-shadow: 0 0 0 .6vmin #fff; }
+  .tacho.bien { box-shadow: 0 0 0 .7vmin var(--bien); }
+  .tacho.mal { opacity: .45; }
+  .tacho.era { box-shadow: 0 0 0 .8vmin #fff; animation: latido .5s ease-in-out infinite alternate; }
+  @keyframes latido { to { transform: scale(1.05); } }
+
+  /* Durante el juego */
+  .barra { flex: none; width: 100%; max-width: 1500px; height: 1.8vmin; min-height: 10px; border-radius: 99px; background: var(--ola); overflow: hidden; }
+  #tiempo { height: 100%; background: var(--claro); transform-origin: left; }
+  #tiempo.poco { background: var(--naranja); }
+  .marcador { flex: none; display: flex; justify-content: space-between; align-items: baseline; gap: 3vmin; width: 100%; max-width: 1500px;
+    font-size: clamp(18px, 4vmin, 38px); font-weight: 800; font-variant-numeric: tabular-nums; }
+  #vidas { display: flex; gap: 1.2vmin; align-self: center; }
+  #vidas i { width: clamp(16px, 3.4vmin, 32px); height: clamp(16px, 3.4vmin, 32px); border-radius: 50%; background: var(--claro); transition: background .2s, transform .2s; }
+  #vidas i.perdida { background: var(--ola); transform: scale(.7); }
+  .escenario { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.6vmin; }
+  .carta { flex: 0 1 auto; min-height: 0; box-sizing: border-box; width: min(64vmin, 560px); padding: 1.6vmin 3vmin; border-radius: 3vmin; background: var(--crema); color: var(--tinta);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .8vmin; text-align: center; cursor: grab; touch-action: none;
+    box-shadow: 0 1vmin 3vmin rgba(0, 0, 0, .35); animation: entra .18s ease-out; }
+  .carta.agarrada { cursor: grabbing; box-shadow: 0 2vmin 5vmin rgba(0, 0, 0, .5); }
+  .carta.volando { transition: transform .26s ease-in, opacity .26s ease-in; }
+  .carta.temblor { animation: temblor .32s ease; }
+  #foto { display: block; height: clamp(100px, 33vmin, 330px); max-width: 100%; object-fit: contain; pointer-events: none; }
+  #nombre { font-size: clamp(20px, 4.4vmin, 42px); font-weight: 800; line-height: 1.05; letter-spacing: -0.01em; text-wrap: balance; pointer-events: none; }
+  @keyframes entra { from { transform: scale(.7); opacity: 0; } }
+  @keyframes temblor { 25% { translate: -2vmin 0; } 50% { translate: 2vmin 0; } 75% { translate: -1vmin 0; } }
+  #aviso { flex: none; min-height: 2.5em; max-width: 34em; font-size: clamp(16px, 3.1vmin, 30px); font-weight: 600; line-height: 1.22; text-align: center; text-wrap: balance; }
+  #aviso.bien { color: var(--bien); font-weight: 800; }
+  #aviso.mal { color: var(--mal); }
+  #aviso b { color: #fff; }
+
+  /* Final */
+  #resultado { font-size: clamp(20px, 4.4vmin, 42px); font-weight: 800; }
+  #nuevo { font-size: clamp(16px, 3.2vmin, 30px); font-weight: 800; color: var(--naranja); }
+  .repaso { display: flex; flex-direction: column; gap: 1vmin; width: 100%; max-width: 40em; list-style: none; text-align: left;
+    font-size: clamp(14px, 2.7vmin, 24px); font-weight: 600; line-height: 1.2; }
+  .repaso li { padding: 1vmin 2vmin; border-radius: 1.6vmin; background: rgba(255, 255, 255, .1); }
+  .repaso b { color: var(--claro); }
+  .cierre { font-size: clamp(15px, 2.9vmin, 26px); font-weight: 600; color: var(--linea); max-width: 30em; text-wrap: balance; }
+
+  /* Créditos de las fotos */
+  .chico { font: inherit; font-size: clamp(13px, 2.3vmin, 20px); font-weight: 600; min-height: 44px; padding: 0 2vmin; border: 0; background: none; color: var(--linea); text-decoration: underline; cursor: pointer; }
+  .lista-creditos { flex: 1; min-height: 0; overflow: auto; width: 100%; max-width: 50em; list-style: none; font-size: clamp(13px, 2.3vmin, 20px); line-height: 1.3; -webkit-user-select: text; user-select: text; }
+  .lista-creditos li { padding: .7vmin 0; border-bottom: 1px solid var(--ola); overflow-wrap: anywhere; }
+  .lista-creditos a { color: var(--claro); }
+
+  @media (max-aspect-ratio: 1/1) {
+    .tachos { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+    .tacho { grid-column: span 2; min-height: 72px; border-radius: 16px; padding: 8px 4px; }
+    .tacho:nth-child(n+4) { grid-column: span 3; }
+    .muestra .tacho { min-height: 76px; }
+    .carta { width: min(86vw, 520px); border-radius: 20px; padding: 12px 16px; }
+    #foto { height: clamp(110px, 25vh, 300px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .carta, .carta.temblor, .tacho.era { animation: none; }
+    .carta.volando { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<svg class="ondas" id="ondas" viewBox="0 0 1000 300" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M0 110 C 190 60, 380 125, 570 135 S 860 80, 1000 110 L1000 300 L0 300 Z" fill="#1F5C36"/>
+  <path d="M0 190 C 230 160, 430 205, 630 207 S 880 175, 1000 190 L1000 300 L0 300 Z" fill="#2B5E35"/>
+  <path d="M0 255 C 270 238, 530 263, 770 261 S 950 245, 1000 253 L1000 300 L0 300 Z" fill="#467A52"/>
+</svg>
+
+<section class="pantalla centrada" id="inicio">
+  <p class="marca">EcoMVD · Terra Byte</p>
+  <h1>¿Dónde va?</h1>
+  <p class="bajada">Tenés 3 vidas. Cada nivel es más rápido, y los tachos cambian de lugar.</p>
+  <div class="tachos muestra" id="muestra" aria-hidden="true"></div>
+  <button class="boton" id="jugar" type="button">Jugar</button>
+  <p id="record"></p>
+  <button class="chico" id="ver-creditos" type="button">Créditos de las fotos</button>
+</section>
+
+<section class="pantalla" id="juego" hidden>
+  <div class="marcador"><span id="nivel-actual"></span><span id="vidas" role="img"></span><span><span id="puntos">0</span> puntos</span></div>
+  <div class="barra" aria-hidden="true"><div id="tiempo"></div></div>
+  <div class="escenario">
+    <div class="carta" id="carta"><img id="foto" alt="" draggable="false"><strong id="nombre"></strong></div>
+    <p id="aviso" aria-live="polite"></p>
+  </div>
+  <div class="tachos" id="tachos"></div>
+</section>
+
+<section class="pantalla centrada" id="fin" hidden>
+  <p class="marca" id="motivo"></p>
+  <h2 id="nivel"></h2>
+  <p id="resultado"></p>
+  <p id="nuevo" hidden>¡Nuevo récord del stand!</p>
+  <ul class="repaso" id="repaso"></ul>
+  <button class="boton" id="otra" type="button">Jugar de nuevo</button>
+  <p class="cierre">Con EcoMVD le sacás una foto a un residuo y te dice dónde llevarlo.</p>
+</section>
+
+<section class="pantalla" id="creditos" hidden>
+  <h2>Créditos de las fotos</h2>
+  <ul class="lista-creditos" id="lista-creditos"></ul>
+  <button class="boton" id="cerrar-creditos" type="button">Volver</button>
+</section>
+<script src="donde-va-fotos.js"></script>
+
+<script>
+  var VIDAS = 3, ACIERTOS_POR_NIVEL = 5, PAUSA_ERROR = 2600, PAUSA_NIVEL = 1100, VUELVE_AL_INICIO = 45000;
+  var LIMITES = [6000, 5000, 4200, 3500, 3000]; // tiempo para cada residuo, en milisegundos, por nivel
+
+  var TACHOS = {
+    reciclables: { nombre: 'Reciclables', sub: 'plástico, papel, cartón y latas', color: '#2B7AA3' },
+    vidrio: { nombre: 'Vidrio', sub: 'botellas y frascos', color: '#3B8351' },
+    especiales: { nombre: 'Especiales', sub: 'pilas, aparatos, aceite y remedios', color: '#B4531A' },
+    compost: { nombre: 'Compost', sub: 'restos de cocina', color: '#83572A' },
+    comun: { nombre: 'Basura común', sub: 'lo que no se recicla', color: '#4B5F52' }
+  };
+
+  // [foto, nombre, tacho, por qué]
+  var FACILES = [
+    ['botella-plastico', 'Botella de plástico', 'reciclables', 'Enjuagala y aplastala para que ocupe menos.'],
+    ['lata-refresco', 'Lata de refresco', 'reciclables', 'Las latas van con los reciclables, enjuagadas y aplastadas.'],
+    ['caja-carton', 'Caja de cartón', 'reciclables', 'Limpia, seca y plegada.'],
+    ['diario', 'Diario viejo', 'reciclables', 'El papel seco y limpio se recicla.'],
+    ['botella-vidrio', 'Botella de vidrio', 'vidrio', 'Los contenedores de reciclables no reciben vidrio.'],
+    ['frasco', 'Frasco de vidrio', 'vidrio', 'Enjuagalo, sacale la tapa y llevalo al contenedor de vidrio.'],
+    ['pilas', 'Pilas', 'especiales', 'Nunca a la basura: contenedor de pilas o Ecocentro.'],
+    ['celular', 'Celular viejo', 'especiales', 'Al Ecocentro o a un local de ANTEL.'],
+    ['notebook', 'Computadora vieja', 'especiales', 'Los aparatos electrónicos van al Ecocentro.'],
+    ['banana', 'Banana pasada', 'compost', 'Los restos de fruta van al compost.'],
+    ['manzana', 'Manzana mordida', 'compost', 'Los restos de fruta van al compost.'],
+    ['zanahoria', 'Restos de zanahoria', 'compost', 'Los restos de verdura cruda van al compost.'],
+    ['colilla', 'Colillas de cigarrillo', 'comun', 'Las colillas no se reciclan.'],
+    ['papel-higienico', 'Papel higiénico usado', 'comun', 'El papel sucio no se recicla.'],
+    ['panal', 'Pañal usado', 'comun', 'Los pañales no se reciclan.']
+  ];
+
+  // Se parecen a otro residuo, pero van en otro tacho. Salen mezclados después de los primeros cinco.
+  var TRAMPAS = [
+    ['caja-carton', 'Caja de cartón mojada', 'comun', 'El cartón mojado no se recicla.'],
+    ['diario', 'Diario mojado', 'comun', 'El papel mojado no se recicla.'],
+    ['pizza', 'Caja de pizza con grasa', 'comun', 'El cartón engrasado no se recicla.'],
+    ['copa', 'Copa de cristal', 'comun', 'La cristalería no es vidrio de envase: va bien envuelta a la basura.'],
+    ['foco', 'Foco común', 'comun', 'Los focos comunes no contaminan como los de bajo consumo, pero tampoco se reciclan.'],
+    ['bajo-consumo', 'Lámpara de bajo consumo', 'especiales', 'Tiene mercurio: va al Ecocentro.'],
+    ['aceite', 'Aceite de cocina usado', 'especiales', 'Frío y en una botella cerrada, a un punto de aceite o al Ecocentro.'],
+    ['remedios', 'Medicamentos vencidos', 'especiales', 'Al Ecocentro o a una farmacia adherida. Nunca al inodoro.'],
+    ['radio', 'Radio vieja', 'especiales', 'Los aparatos electrónicos van al Ecocentro.'],
+    ['balde', 'Balde de plástico', 'reciclables', 'El plástico duro también se recicla.'],
+    ['mate', 'Yerba del mate', 'compost', 'La yerba también va al compost.'],
+    ['cafe', 'Borra de café', 'compost', 'El café y las infusiones también van al compost.'],
+    ['verdura', 'Restos de verdura', 'compost', 'La verdura cruda va al compost.'],
+    ['botella-vino', 'Botella de vino', 'vidrio', 'Va al contenedor de vidrio, no al de reciclables.']
+  ];
+
+  // Los mismos niveles de EcoCréditos de la app, según los aciertos.
+  var TITULOS = [[25, 'Guardián de Montevideo'], [15, 'Vecinx Referente'], [7, 'Vecinx Activx'], [0, 'Vecinx Curiosx']];
+
+  var FOTOS = window.FOTOS || {};
+  function $(id) { return document.getElementById(id); }
+  var carta = $('carta'), aviso = $('aviso');
+  var botones = {};
+  var jugando = false, trabado = true, agarre = null, reloj = null, volver = null;
+  var restante, limite, antes, puntos, aciertos, vistos, vidas, nivel, errores, actual, origen, mazo;
+
+  function mezclar(lista) {
+    var l = lista.slice();
+    for (var i = l.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1)), t = l[i];
+      l[i] = l[j];
+      l[j] = t;
+    }
+    return l;
+  }
+
+  function dibujarTacho(t) {
+    var d = TACHOS[t], b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tacho';
+    b.style.setProperty('--c', d.color);
+    b.innerHTML = '<b>' + d.nombre + '</b><small>' + d.sub + '</small>';
+    return b;
+  }
+  Object.keys(TACHOS).forEach(function (t) {
+    var muestra = dibujarTacho(t);
+    muestra.disabled = true;
+    $('muestra').appendChild(muestra);
+    botones[t] = dibujarTacho(t);
+    botones[t].addEventListener('click', function () { elegir(t); });
+    $('tachos').appendChild(botones[t]);
+  });
+
+  function cambiarTachosDeLugar() {
+    var todos = Object.keys(TACHOS).map(function (t) { return botones[t]; });
+    var orden;
+    do { orden = mezclar(todos); } while (orden.every(function (b, i) { return b === $('tachos').children[i]; }));
+    orden.forEach(function (b) { $('tachos').appendChild(b); });
+  }
+
+  function leerRecord() {
+    try { return Number(localStorage.getItem('dondeva-record')) || 0; } catch (e) { return 0; }
+  }
+  function guardarRecord(n) {
+    try { localStorage.setItem('dondeva-record', String(n)); } catch (e) {}
+  }
+
+  function mostrar(id) {
+    ['inicio', 'juego', 'fin', 'creditos'].forEach(function (p) { $(p).hidden = p !== id; });
+    $('ondas').style.display = id === 'inicio' || id === 'fin' ? '' : 'none';
+    if (id === 'inicio') {
+      var r = leerRecord();
+      $('record').textContent = r ? 'Récord del stand: ' + r + ' puntos' : '';
+    }
+  }
+
+  function limpiarTachos() {
+    Object.keys(botones).forEach(function (t) { botones[t].classList.remove('bien', 'mal', 'era', 'sobre'); });
+  }
+
+  function pintarMarcador() {
+    $('nivel-actual').textContent = 'Nivel ' + nivel;
+    $('puntos').textContent = puntos;
+    $('vidas').setAttribute('aria-label', vidas + ' vidas');
+    $('vidas').innerHTML = '';
+    for (var i = 0; i < VIDAS; i++) {
+      var v = document.createElement('i');
+      if (i >= vidas) v.className = 'perdida';
+      $('vidas').appendChild(v);
+    }
+  }
+
+  function pintarTiempo() {
+    $('tiempo').style.transform = 'scaleX(' + Math.max(0, restante / limite) + ')';
+    $('tiempo').classList.toggle('poco', restante < limite * 0.35);
+  }
+
+  function ponerResiduo() {
+    if (!mazo.length) return terminar('¡Clasificaste todos los residuos!');
+    limpiarTachos();
+    actual = mazo.pop();
+    limite = LIMITES[Math.min(nivel, LIMITES.length) - 1];
+    restante = limite;
+    aviso.textContent = '';
+    aviso.className = '';
+    carta.className = 'carta';
+    carta.style.transform = '';
+    carta.style.opacity = '';
+    void carta.offsetWidth; // vuelve a arrancar la animación de entrada
+    var f = FOTOS[actual[0]];
+    $('foto').hidden = !f;
+    if (f) $('foto').src = f.src;
+    $('nombre').textContent = actual[1];
+    origen = carta.getBoundingClientRect();
+    pintarTiempo();
+    antes = Date.now();
+    trabado = false;
+  }
+
+  function empezar() {
+    pantallaCompleta();
+    noApagar();
+    clearTimeout(volver);
+    puntos = aciertos = vistos = 0;
+    vidas = VIDAS;
+    nivel = 1;
+    errores = [];
+    var f = mezclar(FACILES);
+    mazo = mezclar(f.slice(5).concat(TRAMPAS)).concat(f.slice(0, 5)); // se saca del final: arranca con cinco fáciles
+    jugando = true;
+    mostrar('juego');
+    pintarMarcador();
+    ponerResiduo();
+    clearInterval(reloj);
+    reloj = setInterval(tic, 50);
+  }
+
+  function tic() {
+    if (trabado) return;
+    var ahora = Date.now();
+    restante -= ahora - antes;
+    antes = ahora;
+    pintarTiempo();
+    if (restante <= 0) fallar(null);
+  }
+
+  function elegir(t) {
+    if (!jugando || trabado) return;
+    if (t === actual[2]) acertar(t);
+    else fallar(t);
+  }
+
+  function acertar(t) {
+    trabado = true;
+    vistos++;
+    aciertos++;
+    var suma = 10 * nivel, subeNivel = aciertos % ACIERTOS_POR_NIVEL === 0;
+    puntos += suma;
+    aviso.textContent = '¡Bien! +' + suma;
+    aviso.className = 'bien';
+    botones[t].classList.add('bien');
+    var d = botones[t].getBoundingClientRect();
+    carta.classList.add('volando');
+    carta.style.transform = 'translate(' + (d.left + d.width / 2 - origen.left - origen.width / 2) + 'px,' +
+      (d.top + d.height / 2 - origen.top - origen.height / 2) + 'px) scale(.2)';
+    carta.style.opacity = 0;
+    if (subeNivel) {
+      nivel++;
+      setTimeout(function () {
+        limpiarTachos();
+        cambiarTachosDeLugar();
+        aviso.textContent = 'Nivel ' + nivel + ': más rápido, y los tachos cambiaron de lugar';
+      }, 300);
+    }
+    pintarMarcador();
+    setTimeout(ponerResiduo, subeNivel ? PAUSA_NIVEL : 300);
+  }
+
+  // Errar o quedarse sin tiempo cuesta una vida. El reloj espera para que se pueda leer dónde iba.
+  function fallar(t) {
+    trabado = true;
+    vistos++;
+    vidas--;
+    errores.push(actual);
+    if (t) botones[t].classList.add('mal');
+    botones[actual[2]].classList.add('era');
+    carta.style.transform = '';
+    carta.classList.add('temblor');
+    aviso.innerHTML = (t ? '' : '¡Se acabó el tiempo! ') + 'Va en <b>' + TACHOS[actual[2]].nombre + '</b>. ' + actual[3];
+    aviso.className = 'mal';
+    pintarMarcador();
+    setTimeout(function () {
+      if (vidas > 0) ponerResiduo();
+      else terminar('Te quedaste sin vidas');
+    }, PAUSA_ERROR);
+  }
+
+  function terminar(motivo) {
+    if (!jugando) return;
+    jugando = false;
+    trabado = true;
+    clearInterval(reloj);
+    var record = leerRecord();
+    $('motivo').textContent = motivo;
+    $('nivel').textContent = TITULOS.filter(function (n) { return aciertos >= n[0]; })[0][1];
+    $('resultado').textContent = puntos + ' puntos · ' + aciertos + ' de ' + vistos + ' bien · nivel ' + nivel;
+    $('nuevo').hidden = !(puntos > record);
+    if (puntos > record) guardarRecord(puntos);
+    var repaso = $('repaso');
+    repaso.innerHTML = '';
+    errores.slice(0, 3).forEach(function (r) {
+      var li = document.createElement('li');
+      li.innerHTML = r[1] + ': <b>' + TACHOS[r[2]].nombre + '</b>';
+      repaso.appendChild(li);
+    });
+    mostrar('fin');
+    volver = setTimeout(function () { mostrar('inicio'); }, VUELVE_AL_INICIO);
+  }
+
+  // Arrastrar el residuo hasta un tacho. Tocar el tacho hace lo mismo.
+  function tachoEn(x, y) {
+    return Object.keys(botones).filter(function (t) {
+      var r = botones[t].getBoundingClientRect();
+      return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+    })[0];
+  }
+  function marcar(t) {
+    Object.keys(botones).forEach(function (k) { botones[k].classList.toggle('sobre', k === t); });
+  }
+  carta.addEventListener('pointerdown', function (e) {
+    if (!jugando || trabado) return;
+    agarre = { x: e.clientX, y: e.clientY };
+    carta.setPointerCapture(e.pointerId);
+    carta.classList.add('agarrada');
+  });
+  carta.addEventListener('pointermove', function (e) {
+    if (!agarre) return;
+    carta.style.transform = 'translate(' + (e.clientX - agarre.x) + 'px,' + (e.clientY - agarre.y) + 'px) scale(.72)';
+    marcar(tachoEn(e.clientX, e.clientY));
+  });
+  function soltar(e) {
+    if (!agarre) return;
+    agarre = null;
+    carta.classList.remove('agarrada');
+    var t = tachoEn(e.clientX, e.clientY);
+    marcar(null);
+    if (t) elegir(t);
+    else carta.style.transform = '';
+  }
+  carta.addEventListener('pointerup', soltar);
+  carta.addEventListener('pointercancel', soltar);
+
+  // En la tablet: pantalla completa con el primer toque, y que la pantalla no se apague.
+  var bloqueo = null;
+  function noApagar() {
+    if (navigator.wakeLock && (!bloqueo || bloqueo.released)) {
+      navigator.wakeLock.request('screen').then(function (b) { bloqueo = b; }).catch(function () {});
+    }
+  }
+  function pantallaCompleta() {
+    var el = document.documentElement, pedir = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (pedir && !(document.fullscreenElement || document.webkitFullscreenElement)) {
+      var r = pedir.call(el);
+      if (r && r.catch) r.catch(function () {});
+    }
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) noApagar(); });
+
+  $('jugar').addEventListener('click', empezar);
+  $('otra').addEventListener('click', empezar);
+  $('cerrar-creditos').addEventListener('click', function () { mostrar('inicio'); });
+  $('ver-creditos').addEventListener('click', function () {
+    var lista = $('lista-creditos');
+    lista.innerHTML = '';
+    var vistas = {};
+    FACILES.concat(TRAMPAS).forEach(function (r) {
+      var f = FOTOS[r[0]];
+      if (!f || vistas[r[0]]) return;
+      vistas[r[0]] = true;
+      var li = document.createElement('li'), a = document.createElement('a');
+      li.textContent = r[1] + ': ' + f.autor + ', ' + f.licencia + ' · ';
+      a.href = f.pagina;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = 'Wikimedia Commons';
+      li.appendChild(a);
+      lista.appendChild(li);
+    });
+    mostrar('creditos');
+  });
+  mostrar('inicio');
+</script>
+</body>
+</html>
