@@ -38,7 +38,7 @@
   var ARVEJAS = ['Semillas de\narvejas', '#6FA77E', '#14231A'];
   var PREMIOS = [
     ZANAHORIA, ESPINACA, ['Bolsa de\nmateriales\nreciclados', '#CFE6D5', '#14231A'], ARVEJAS,
-    ['Sticker', '#3B8351', '#fff'], ZANAHORIA, ['Plantín', '#F0F7E8', '#14231A'], ESPINACA,
+    ['Sticker', '#3B8351', '#fff'], ZANAHORIA, ['Suerte para\nla próxima', '#F0F7E8', '#14231A'], ESPINACA,
     ['¡Girá\notra vez!', '#B4531A', '#fff'], ARVEJAS
   ];
   var svg = document.getElementById('svg');
@@ -102,13 +102,17 @@
     boton.disabled = true;
     premio.textContent = '';
     giro += 5 * 360 + Math.random() * 360;
+    // Que nunca frene justo sobre la línea entre dos casilleros: ahí no se ve cuál salió.
+    var borde = ((360 - giro % 360) % 360 + paso / 2) % paso;
+    if (borde < 3) giro -= 3;
+    if (borde > paso - 3) giro += 3;
     svg.style.transform = 'rotate(' + giro + 'deg)';
   }
   // El premio es el casillero que quedó abajo de la flecha.
   svg.addEventListener('transitionend', function () {
     var i = Math.round((360 - giro % 360) % 360 / paso) % PREMIOS.length;
     var nombre = PREMIOS[i][0].split('\n').join(' ');
-    premio.textContent = nombre === '¡Girá otra vez!' ? nombre : '¡Te tocó: ' + nombre + '!';
+    premio.textContent = /otra vez|Suerte/.test(nombre) ? nombre : '¡Te tocó: ' + nombre + '!';
     girando = false;
     boton.disabled = false;
   });
