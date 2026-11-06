@@ -6,7 +6,7 @@
 <title>Ruleta EcoMVD</title>
 <!-- Ruleta de premios del stand, para la tablet. Se gira una vez por canje, viendo la pantalla
      "¡Canjeaste tu regalo!" de la app. No usa internet: una vez abierta, sigue andando aunque se
-     corte la conexión. Los casilleros son los mismos de la ruleta de cartón del canvas. -->
+     corte la conexión. -->
 <style>
   html, body { margin: 0; height: 100%; }
   body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.5vmin;
@@ -32,11 +32,14 @@
 <p id="premio" aria-live="polite"></p>
 <button id="girar" type="button">¡Girar!</button>
 <script>
-  // Mismos casilleros y colores que la ruleta de cartón: [premio, fondo, letra].
+  // [premio, fondo, letra]. Cada semilla sale dos veces, con su color, y nunca pegada a sí misma.
+  var ZANAHORIA = ['Semillas de\nzanahoria', '#E07A38', '#14231A'];
+  var ESPINACA = ['Semillas de\nespinaca', '#1F5C36', '#fff'];
+  var ARVEJAS = ['Semillas de\narvejas', '#6FA77E', '#14231A'];
   var PREMIOS = [
-    ['Sticker', '#1F5C36', '#fff'], ['Semillas', '#6FA77E', '#14231A'], ['Sticker', '#3B8351', '#fff'],
-    ['Semillas', '#1F5C36', '#fff'], ['Bolsa de\nmateriales\nreciclados', '#CFE6D5', '#14231A'],
-    ['¡Girá\notra vez!', '#B4531A', '#fff'], ['Plantín', '#F0F7E8', '#14231A']
+    ZANAHORIA, ESPINACA, ['Bolsa de\nmateriales\nreciclados', '#CFE6D5', '#14231A'], ARVEJAS,
+    ['Sticker', '#3B8351', '#fff'], ZANAHORIA, ['Plantín', '#F0F7E8', '#14231A'], ESPINACA,
+    ['¡Girá\notra vez!', '#B4531A', '#fff'], ARVEJAS
   ];
   var svg = document.getElementById('svg');
   var boton = document.getElementById('girar');
@@ -58,11 +61,11 @@
     svg.appendChild(dibujar('path', { d: 'M0 0 L' + punto(desde) + ' A95 95 0 0 1 ' + punto(desde + paso) + ' Z',
       fill: p[1], stroke: '#fff', 'stroke-width': 1.5 }));
     var lineas = p[0].split('\n');
-    var texto = dibujar('g', { transform: 'rotate(' + i * paso + ')', fill: p[2], 'font-size': lineas.length > 2 ? 8.5 : 9,
-      'font-weight': 800, 'text-anchor': 'middle' });
-    var centro = lineas.length > 2 ? -65 : -62;
+    var texto = dibujar('g', { transform: 'rotate(' + i * paso + ')', fill: p[2],
+      'font-size': lineas.length > 2 ? 6.8 : lineas.length > 1 ? 7.6 : 9, 'font-weight': 800, 'text-anchor': 'middle' });
+    var centro = lineas.length > 2 ? -69 : -68;
     lineas.forEach(function (linea, j) {
-      var t = dibujar('text', { x: 0, y: centro + (j - (lineas.length - 1) / 2) * 11 });
+      var t = dibujar('text', { x: 0, y: centro + (j - (lineas.length - 1) / 2) * 9 });
       t.textContent = linea;
       texto.appendChild(t);
     });
