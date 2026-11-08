@@ -40,13 +40,15 @@
   var ARVEJAS = ['Semillas de\narvejas', '#A6D987', '#14231A'];
   var PREMIOS = [
     ZANAHORIA, ESPINACA, ['Bolsa de\nmateriales\nreciclados', '#C9E9B0', '#14231A'], ARVEJAS,
-    ['Sticker', '#3B8351', '#fff'], ZANAHORIA, ['Suerte para\nla próxima', '#F0F7E8', '#14231A'], ESPINACA,
-    ['¡Girá\notra vez!', '#1C1C1E', '#fff'], ARVEJAS
+    ['Sticker', '#3B8351', '#fff'], ZANAHORIA, ['Suerte\npara la\npróxima', '#F0F7E8', '#14231A'], ESPINACA,
+    ['Galletas', '#D9A066', '#14231A'], ['¡Girá\notra vez!', '#1C1C1E', '#fff'], ARVEJAS
   ];
   var svg = document.getElementById('svg');
   var boton = document.getElementById('girar');
   var premio = document.getElementById('premio');
   var paso = 360 / PREMIOS.length, giro = 0, girando = false;
+  // Con más de 10 casilleros, la letra se achica para que el texto no pase al de al lado.
+  var letra = Math.min(1, 10 / PREMIOS.length);
 
   function dibujar(tag, attrs) {
     var e = document.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -64,7 +66,7 @@
       fill: p[1], stroke: '#fff', 'stroke-width': 1.5 }));
     var lineas = p[0].split('\n');
     var texto = dibujar('g', { transform: 'rotate(' + i * paso + ')', fill: p[2],
-      'font-size': lineas.length > 2 ? 6.8 : lineas.length > 1 ? 7.6 : 9, 'font-weight': 800, 'text-anchor': 'middle' });
+      'font-size': (lineas.length > 2 ? 6.8 : lineas.length > 1 ? 7.6 : 9) * letra, 'font-weight': 800, 'text-anchor': 'middle' });
     var centro = lineas.length > 2 ? -69 : -68;
     lineas.forEach(function (linea, j) {
       var t = dibujar('text', { x: 0, y: centro + (j - (lineas.length - 1) / 2) * 9 });
