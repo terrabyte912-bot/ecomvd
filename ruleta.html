@@ -38,15 +38,16 @@
   var ZANAHORIA = ['Semillas de\nzanahoria', '#E07A38', '#14231A'];
   var ESPINACA = ['Semillas de\nespinaca', '#1F5C36', '#fff'];
   var ARVEJAS = ['Semillas de\narvejas', '#A6D987', '#14231A'];
+  var GALLETAS = ['Galletas', '#3B8351', '#fff'];
   var PREMIOS = [
     ZANAHORIA, ESPINACA, ['Bolsa de\nmateriales\nreciclados', '#C9E9B0', '#14231A'], ARVEJAS,
-    ['Sticker', '#3B8351', '#fff'], ZANAHORIA, ['Suerte\npara la\npróxima', '#F0F7E8', '#14231A'], ESPINACA,
-    ['Galletas', '#D9A066', '#14231A'], ['¡Girá\notra vez!', '#1C1C1E', '#fff'], ARVEJAS
+    GALLETAS, ZANAHORIA, ['Suerte\npara la\npróxima', '#F0F7E8', '#14231A'], ESPINACA,
+    GALLETAS, ['¡Girá\notra vez!', '#1C1C1E', '#fff'], ARVEJAS
   ];
   var svg = document.getElementById('svg');
   var boton = document.getElementById('girar');
   var premio = document.getElementById('premio');
-  var paso = 360 / PREMIOS.length, giro = 0, girando = false;
+  var paso = 360 / PREMIOS.length, giro = 0, girando = false, usada = false;
   // Con más de 10 casilleros, la letra se achica para que el texto no pase al de al lado.
   var letra = Math.min(1, 10 / PREMIOS.length);
 
@@ -101,7 +102,7 @@
   function girar() {
     pantallaCompleta();
     noApagar();
-    if (girando) return;
+    if (girando || usada) return;
     girando = true;
     boton.disabled = true;
     premio.textContent = '';
@@ -118,7 +119,24 @@
     var nombre = PREMIOS[i][0].split('\n').join(' ');
     premio.textContent = /otra vez|Suerte/.test(nombre) ? nombre : '¡Te tocó: ' + nombre + '!';
     girando = false;
-    boton.disabled = false;
+    // Se gira una sola vez por canje; solo "¡Girá otra vez!" deja girar de nuevo.
+    usada = !/otra vez/.test(nombre);
+    boton.disabled = usada;
+    boton.textContent = usada ? 'Ya giraste' : '¡Girar!';
+  });
+  // Para la tablet del stand: mantener apretado el título 2 segundos la deja lista para otra persona.
+  var espera = null;
+  var titulo = document.querySelector('h1');
+  titulo.addEventListener('pointerdown', function () {
+    espera = setTimeout(function () {
+      usada = false;
+      boton.disabled = false;
+      boton.textContent = '¡Girar!';
+      premio.textContent = '';
+    }, 2000);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) {
+    titulo.addEventListener(ev, function () { clearTimeout(espera); });
   });
   boton.addEventListener('click', girar);
   document.getElementById('rueda').addEventListener('click', girar);
