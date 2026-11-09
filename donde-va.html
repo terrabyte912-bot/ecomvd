@@ -286,10 +286,10 @@ window.FOTOS = {
   }
 
   function leerRecord() {
-    try { return Number(localStorage.getItem('dondeva-record')) || 0; } catch (e) { return 0; }
+    try { return Number(localStorage.getItem('dondeva-record-final')) || 0; } catch (e) { return 0; }
   }
   function guardarRecord(n) {
-    try { localStorage.setItem('dondeva-record', String(n)); } catch (e) {}
+    try { localStorage.setItem('dondeva-record-final', String(n)); } catch (e) {}
   }
 
   function mostrar(id) {
