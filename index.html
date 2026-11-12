@@ -4,15 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Probá EcoMVD</title>
-<!-- Página pública (GitHub Pages) a la que lleva el QR del stand: en el
-     celular muestra solo los pasos de ese celular; en la compu, el QR de esta
-     misma página para imprimir o mostrar.
-     - Android: el APK (app normal, no depende de Expo Go).
-     - iPhone: Expo Go, que desde el 12/5/2026 solo abre proyectos de una
-       organización de Expo de la que la persona sea miembro (rol "Viewer").
-     - Si el proyecto pasa a otro SDK de Expo, cambiar SDK abajo (tiene que
-       coincidir con el Expo Go de las tiendas).
-     - Si se genera otro APK, cambiar APK abajo. -->
+<!-- Página pública (GitHub Pages): el link de la bio de las redes y del QR.
+     En el celular muestra solo los pasos de ese celular; en la compu, el QR de
+     esta misma página.
+     - Android: el APK (app normal). Si se genera otro APK, cambiar APK abajo.
+     - iPhone (y quien no quiera instalar): la versión web, en app/. Cómo se
+       arma: docs/version-web.md. -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 24px 16px;
@@ -23,6 +20,7 @@
     background: #FAFCF7; box-shadow: 0 6px 18px rgba(15, 61, 34, .28); }
   h1 { margin: 0 0 4px; color: #1F5C36; font-size: 30px; }
   .sub { margin: 0; color: #3B8351; }
+  .what { margin: 10px auto 0; max-width: 520px; line-height: 1.45; }
   .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
   .card { border-radius: 24px; padding: 24px 20px; max-width: 380px; background: #FAFCF7; box-shadow: 0 6px 18px rgba(15, 61, 34, .28);
     width: 100%; text-align: center; box-sizing: border-box; page-break-inside: avoid; }
@@ -32,8 +30,6 @@
   .btn { display: block; margin-top: 8px; padding: 14px 18px; border-radius: 99px; background: #1C1C1E;
     color: #fff; text-decoration: none; font-weight: 700; text-align: center; }
   .btn.alt { background: #fff; color: #14231A; border: 1.5px solid rgba(20, 35, 26, .12); }
-  .copy { display: block; width: 100%; margin-top: 8px; padding: 8px; border: 0; background: none;
-    color: #1F5C36; font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; }
   .note { font-size: 13px; color: rgba(20, 35, 26, .72); margin: 12px 0 0; }
   .lead { margin: 0 0 14px; text-align: left; }
   .help { text-align: left; font-size: 14px; line-height: 1.45; margin-top: 12px; color: #14231A; }
@@ -52,13 +48,15 @@
 <header>
   <h1>Probá EcoMVD</h1>
   <p class="sub">Tu barrio, tu territorio</p>
+  <p class="what">Sacale una foto a la basura de la calle y la app te dice a quién avisarle. Y buscá dónde va cada residuo en Montevideo.</p>
 </header>
 
 <div class="grid">
   <div class="card" id="pc">
     <h2>Escaneá con la cámara del celular</h2>
     <div class="qr" id="qr"></div>
-    <p class="note">En Android se instala directo. En iPhone hay que pedir acceso (ver los pasos).</p>
+    <p class="note">En Android se instala. En iPhone se usa desde el navegador.</p>
+    <a class="btn alt" href="app/">Abrir EcoMVD en la compu</a>
   </div>
 
   <div class="card" id="android">
@@ -86,23 +84,14 @@
       </ul>
       <p>Si es un celular del liceo o del trabajo, puede que no deje instalar nada fuera de la tienda.</p>
     </details>
+    <p class="note">¿No querés instalar nada? <a href="app/">Usala desde el navegador</a>.</p>
   </div>
 
   <div class="card" id="iphone">
     <h2>iPhone</h2>
-    <p class="note lead">EcoMVD todavía no está en el App Store. En iPhone se prueba con la app
-      <strong>Expo Go</strong>, que solo la abre para las personas que sumamos al proyecto.</p>
-    <ol>
-      <li>Instalá <strong>Expo Go</strong> (gratis).
-        <a class="btn alt" href="https://apps.apple.com/app/expo-go/id982107779">Expo Go en el App Store</a></li>
-      <li>Abrí Expo Go y creá una cuenta gratis (<strong>Sign up</strong>).</li>
-      <li>Mandale tu <strong>nombre de usuario de Expo</strong> a quien te invitó (o a
-        terrabyte912@gmail.com). Te llega un mail de invitación: aceptalo.</li>
-      <li>Con la sesión iniciada en Expo Go, volvé a esta página y abrí EcoMVD.
-        <a class="btn expo-link" href="#">Abrir EcoMVD</a>
-        <button type="button" class="copy">¿No se abre? Copiá el link</button></li>
-      <li>Creá tu cuenta de EcoMVD (o tocá "Probar sin cuenta").</li>
-    </ol>
+    <p class="note lead">EcoMVD todavía no está en el App Store, pero la podés usar desde Safari, sin instalar nada.</p>
+    <a class="btn" href="app/">Abrir EcoMVD</a>
+    <p class="note">Para tenerla como una app más: en Safari tocá <strong>Compartir</strong> y después <strong>Agregar a inicio</strong>.</p>
   </div>
 </div>
 
@@ -114,28 +103,7 @@
 
 <script>
   var APK = 'https://expo.dev/artifacts/eas/RFCfBDrrHBKqp20DJNff3Ydro9HJXnNBtmsg8x89dPw.apk';
-  var PROJECT = '5ff4cb6f-f8bc-4121-86c3-b303462a1d4e';
-  var SDK = '58.0.0';
-  var path = 'u.expo.dev/' + PROJECT + '?runtime-version=' + encodeURIComponent('exposdk:' + SDK) +
-    '&channel-name=preview';
-  var expoGo = 'exp://' + path;
-
   document.getElementById('apk').href = APK;
-  document.querySelectorAll('.expo-link').forEach(function (a) { a.href = expoGo; });
-
-  // Plan B: copiar el link y pegarlo en Expo Go ("Enter URL manually").
-  document.querySelectorAll('.copy').forEach(function (b) {
-    b.onclick = function () {
-      var done = function () {
-        b.textContent = 'Copiado. Abrí Expo Go, tocá "Enter URL manually" y pegalo.';
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(expoGo).then(done, function () { prompt('Copiá este link:', expoGo); });
-      } else {
-        prompt('Copiá este link:', expoGo);
-      }
-    };
-  });
 
   var ua = navigator.userAgent;
   var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
